@@ -1,0 +1,9 @@
+application: metal-bus-589
+module: logmodule
+version: gaebigquery
+runtime: go
+api_version: go1
+
+handlers:
+- url: /.*
+  script: _go_app
