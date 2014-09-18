@@ -18,8 +18,8 @@ const (
 )
 
 var config = &oauth.Config{
-	ClientId:     "961460936936-ked3bqh8sa80onmr1t0cs1k95h999na6.apps.googleusercontent.com",
-	ClientSecret: "Jx0_0355D681HSv_29FXTwJN",
+	ClientId:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
+	ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxx",
 	Scope:        bigquery.BigqueryScope,
 	RedirectURL:  "http://localhost:8081/_admin/set_token",
 	AuthURL:      "https://accounts.google.com/o/oauth2/auth",

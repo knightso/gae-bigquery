@@ -14,16 +14,7 @@ const (
 	leaseTime int = 60 * 5
 )
 
-const (
-	// ユーザー編集箇所。
-	projectID string = "metal-bus-589"
-	queueName string = "gaebigquery"
-)
-
 func init() {
-	logConfig.Add("TestLog_A", "log_test", "table_a", "kind:string,name:string,count:integer")
-	//logConfig.Add("TestLog_B", "dataset_test", "table_b", "kind:string,date:timestamp,count:integer")
-
 	http.HandleFunc("/schedule", ScheduleHandler)
 }
 
