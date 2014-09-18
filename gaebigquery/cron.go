@@ -21,8 +21,8 @@ const (
 )
 
 func init() {
-	logConfig.Add("TestLog_A", "dataset_test", "table_a", "kind:string,date:timestamp,count:integer")
-	logConfig.Add("TestLog_B", "dataset_test", "table_b", "kind:string,date:timestamp,count:integer")
+	logConfig.Add("TestLog_A", "log_test", "table_a", "kind:string,name:string,count:integer")
+	//logConfig.Add("TestLog_B", "dataset_test", "table_b", "kind:string,date:timestamp,count:integer")
 
 	http.HandleFunc("/schedule", ScheduleHandler)
 }

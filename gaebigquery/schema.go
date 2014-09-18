@@ -15,6 +15,7 @@ type LogConfig map[string]BigQueryDefine // keyはLogID
 
 var logConfig = LogConfig{}
 
+// logIDはユーザーが定義したログの種類を表す識別子です。
 func (l *LogConfig) Add(logID, datasetID, tableID, schema string) {
 	bqDef := BigQueryDefine{
 		DatasetID: datasetID,
