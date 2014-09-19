@@ -46,7 +46,7 @@ func ScheduleHandler(rw http.ResponseWriter, req *http.Request) {
 
 	// LogIDごとにBigQueryに書き込みます。
 	for logID, tasks := range eachTable {
-		def := logConfig[logID]
+		def := bqDefine[logID]
 		_, err = service.Tabledata.InsertAll(def.DatasetID, def.TableID, tasks)
 		if err != nil {
 			c.Errorf("%s", err.Error())

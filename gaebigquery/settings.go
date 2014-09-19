@@ -1,11 +1,13 @@
 package gaebigquery
 
 const (
-	projectID string = "your_project_id"
-	queueName string = "your_taskqueue_name"
+	projectID string = "metal-bus-589"
+	queueName string = "gaebigquery"
 )
 
 func init() {
-	// define log config.
-	// ex. logConfig.Add("TestLog_A", "log_test", "table_a", "kind:string,name:string,count:integer")
+	//logConfig.Add("TestLog_A", "log_test", "table_a", "kind:string,name:string,count:integer")
+	SetSchema("TestLog_A", "log_test", "table_a", "kind:string,name:string,count:integer")
 }
+
+// dev server config is "dev.go"

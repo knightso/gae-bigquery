@@ -5,46 +5,45 @@ import (
 	"strings"
 )
 
-type BigQueryDefine struct {
+var bqDefine = make(map[string]bigQueryDefine)
+
+type bigQueryDefine struct {
 	DatasetID string
 	TableID   string
 	Schema    map[string]string
 }
 
-type LogConfig map[string]BigQueryDefine // keyはLogID
-
-var logConfig = LogConfig{}
-
-// logIDはユーザーが定義したログの種類を表す識別子です。
-func (l *LogConfig) Add(logID, datasetID, tableID, schema string) {
-	bqDef := BigQueryDefine{
+func SetSchema(logID, datasetID, tableID, schema string) {
+	bqDefine[logID] = bigQueryDefine{
 		DatasetID: datasetID,
 		TableID:   tableID,
-		Schema:    l.parseSchema(schema),
+		Schema:    parseSchema(schema),
 	}
-	(*l)[logID] = bqDef
 }
 
-func (l *LogConfig) parseSchema(schema string) map[string]string {
+func parseSchema(schema string) map[string]string {
 	// コンマ(,)でschemaを分割します。
-	col_schemata := strings.FieldsFunc(schema, func(r rune) bool {
+	separete := strings.FieldsFunc(schema, func(r rune) bool {
 		return strings.ContainsRune(",", r)
 	})
 
 	schemaMap := make(map[string]string)
-	for _, col_schema := range col_schemata {
+	for _, column := range separete {
 		// コロン(:)で分割します。
-		nameAndType := strings.FieldsFunc(col_schema, func(r rune) bool {
+		labelAndType := strings.FieldsFunc(column, func(r rune) bool {
 			return strings.ContainsRune(":", r)
 		})
 
-		// column名、type名の有無を確認します。
-		if len(nameAndType) != 2 {
+		// label、typeの有無を確認します。
+		if len(labelAndType) != 2 {
 			panic(fmt.Errorf("Invalid schema: %s\n ex. \"column1_name:data_type,column2_name:data_type,...\"", schema))
 		}
 
-		// 許可されたtypeか確認します。
-		switch strings.ToUpper(nameAndType[1]) {
+		label := labelAndType[0]
+		labelType := labelAndType[1]
+
+		// BigQueryで有効な型か確認します。
+		switch strings.ToUpper(labelType) {
 		case "STRING":
 		case "INTEGER":
 		case "FLOAT":
@@ -52,10 +51,10 @@ func (l *LogConfig) parseSchema(schema string) map[string]string {
 		case "TIMESTAMP":
 		case "RECORD":
 		default:
-			panic(fmt.Errorf("Invalid Type: %s\nValid type: STRING, INTEGER, FLOAT, BOOLEAN, TIMESTAMP, RECORD", nameAndType[1]))
+			panic(fmt.Errorf("Invalid Type: %s\nValid type: STRING, INTEGER, FLOAT, BOOLEAN, TIMESTAMP, RECORD", labelType))
 		}
 
-		schemaMap[nameAndType[0]] = strings.ToUpper(nameAndType[1])
+		schemaMap[label] = strings.ToUpper(labelType)
 	}
 
 	return schemaMap
