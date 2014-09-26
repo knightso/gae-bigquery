@@ -1,29 +1,42 @@
-package gaebigquery
+package model
 
 import (
 	"fmt"
 	"strings"
 )
 
-var bqDefine = make(map[string]bigQueryDefine)
+var bigQueryStructs []*BigQuery
 
-type bigQueryDefine struct {
-	DatasetID string
-	TableID   string
-	Schema    map[string]string
-}
-
-func SetSchema(logID, datasetID, tableID, schema string) {
-	bqDefine[logID] = bigQueryDefine{
+func SetBigQuerySchema(logID, datasetID, tableID, schema string) {
+	v := BigQuery{
+		LogID:     logID,
 		DatasetID: datasetID,
 		TableID:   tableID,
-		Schema:    parseSchema(schema),
+		Schema: &Schema{
+			Schema: schema,
+		},
 	}
+	bigQueryStructs = append(bigQueryStructs, &v)
 }
 
-func parseSchema(schema string) map[string]string {
+func GetBigQueries() []*BigQuery {
+	return bigQueryStructs
+}
+
+type BigQuery struct {
+	LogID     string
+	DatasetID string
+	TableID   string
+	Schema    *Schema
+}
+
+type Schema struct {
+	Schema string
+}
+
+func (s *Schema) parse() map[string]string {
 	// コンマ(,)でschemaを分割します。
-	separete := strings.FieldsFunc(schema, func(r rune) bool {
+	separete := strings.FieldsFunc(s.Schema, func(r rune) bool {
 		return strings.ContainsRune(",", r)
 	})
 
@@ -36,7 +49,7 @@ func parseSchema(schema string) map[string]string {
 
 		// label、typeの有無を確認します。
 		if len(labelAndType) != 2 {
-			panic(fmt.Errorf("Invalid schema: %s\n ex. \"column1_name:data_type,column2_name:data_type,...\"", schema))
+			panic(fmt.Errorf("Invalid schema: %s\n ex. \"column1_name:data_type,column2_name:data_type,...\"", s.Schema))
 		}
 
 		label := labelAndType[0]

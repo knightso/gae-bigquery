@@ -1,53 +1,55 @@
 package gaebigquery
 
 import (
+	"fmt"
+
 	"appengine"
 
 	"code.google.com/p/goauth2/appengine/serviceaccount"
 	"code.google.com/p/google-api-go-client/bigquery/v2"
 
+	"constants"
 	"model"
 )
 
-func newBigQueryService(c appengine.Context) (BigQueryService, error) {
-	service := BigQueryService{}
-	service.Tabledata = &TabledataService{s: &service}
+const (
+	BIGQUERY_SCOPE string = bigquery.BigqueryScope
+	PROJECT_ID     string = constants.PROJECT_ID
+)
 
-	err := setServiceAccount(c, &service)
-	if err != nil {
-		return BigQueryService{}, err
-	}
-	return service, nil
-}
+func NewService(c appengine.Context) *Service {
+	s := &Service{}
+	s.TableData = &TabledataService{s: s}
+	s.Tables = &TablesService{s: s}
 
-func setServiceAccount(c appengine.Context, s *BigQueryService) error {
 	if appengine.IsDevAppServer() {
 		err := setServiceAccountForDev(c, s)
 		if err != nil {
-			return err
+			panic(fmt.Sprintf("%s", err.Error()))
 		}
-		return nil
+		return s
 	}
-	client, err := serviceaccount.NewClient(c, bigquery.BigqueryScope)
+
+	client, err := serviceaccount.NewClient(c, BIGQUERY_SCOPE)
 	if err != nil {
-		return err
+		panic(fmt.Sprintf("%s", err.Error()))
 	}
 	service, err := bigquery.New(client)
 	if err != nil {
-		return err
+		panic(fmt.Sprintf("%s", err.Error()))
 	}
-	s.service = service
-
-	return nil
+	s.bq = service
+	return s
 }
 
-type BigQueryService struct {
-	service   *bigquery.Service
-	Tabledata *TabledataService
+type Service struct {
+	bq        *bigquery.Service
+	TableData *TabledataService
+	Tables    *TablesService
 }
 
 type TabledataService struct {
-	s *BigQueryService
+	s *Service
 }
 
 func (t *TabledataService) InsertAll(datasetID, tableID string, tasks []*model.Task) (*bigquery.TableDataInsertAllResponse, error) {
@@ -59,7 +61,7 @@ func (t *TabledataService) InsertAll(datasetID, tableID string, tasks []*model.T
 		}
 	}
 
-	response, err := t.s.service.Tabledata.InsertAll(projectID, datasetID, tableID, &bigquery.TableDataInsertAllRequest{
+	response, err := t.s.bq.Tabledata.InsertAll(PROJECT_ID, datasetID, tableID, &bigquery.TableDataInsertAllRequest{
 		Kind: "bigquery#tableDataInsertAllRequest",
 		Rows: data,
 	}).Do()
@@ -67,4 +69,32 @@ func (t *TabledataService) InsertAll(datasetID, tableID string, tasks []*model.T
 		return nil, err
 	}
 	return response, nil
+}
+
+type TablesService struct {
+	s *Service
+}
+
+func (t *TablesService) Insert(datasetID, tableID string) (*bigquery.Table, error) {
+	table := &bigquery.Table{
+		TableReference: &bigquery.TableReference{
+			DatasetId: datasetID,
+			ProjectId: PROJECT_ID,
+			TableId:   tableID,
+		},
+	}
+
+	newTable, err := t.s.bq.Tables.Insert(PROJECT_ID, datasetID, table).Do()
+	if err != nil {
+		return nil, err
+	}
+	return newTable, nil
+}
+
+type TableNotFoundException struct {
+	s string
+}
+
+func (t *TableNotFoundException) Error() string {
+	return t.s
 }

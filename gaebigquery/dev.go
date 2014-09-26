@@ -18,8 +18,8 @@ const (
 )
 
 var config = &oauth.Config{
-	ClientId:     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.apps.googleusercontent.com",
-	ClientSecret: "xxxxxxxxxxxxxxxxxxxxxxxx",
+	ClientId:     "961460936936-ked3bqh8sa80onmr1t0cs1k95h999na6.apps.googleusercontent.com",
+	ClientSecret: "Jx0_0355D681HSv_29FXTwJN",
 	Scope:        bigquery.BigqueryScope,
 	RedirectURL:  "http://localhost:8081/_admin/set_token",
 	AuthURL:      "https://accounts.google.com/o/oauth2/auth",
@@ -76,7 +76,7 @@ func SetTokenHandler(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(rw, "Success.")
 }
 
-func setServiceAccountForDev(c appengine.Context, s *BigQueryService) error {
+func setServiceAccountForDev(c appengine.Context, s *Service) error {
 	transport := &oauth.Transport{
 		Config: config,
 		Transport: &urlfetch.Transport{
@@ -108,6 +108,6 @@ func setServiceAccountForDev(c appengine.Context, s *BigQueryService) error {
 	if err != nil {
 		return err
 	}
-	s.service = service
+	s.bq = service
 	return nil
 }
